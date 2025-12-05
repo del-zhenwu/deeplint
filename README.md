@@ -16,7 +16,7 @@
 ```bash
 pip install sloppylint
 
-sloppy .
+sloppylint .
 
 # Output:
 # CRITICAL (2 issues)
@@ -60,19 +60,19 @@ sloppy .
 
 ```bash
 # Scan a directory
-sloppy src/
+sloppylint src/
 
 # Scan specific files
-sloppy app.py utils.py
+sloppylint app.py utils.py
 
 # Only high severity issues
-sloppy --severity high
+sloppylint --severity high
 
 # CI mode - exit 1 if issues found
-sloppy --ci --max-score 50
+sloppylint --ci --max-score 50
 
 # Export JSON report
-sloppy --output report.json
+sloppylint --output report.json
 ```
 
 ---
@@ -163,17 +163,17 @@ x = calculate()  # should work hopefully
 ## 🛠️ CLI Commands
 
 ```bash
-sloppy .                    # 🔍 Scan current directory
-sloppy src/ tests/          # 📁 Scan multiple directories
-sloppy --severity high      # ⚡ Only critical/high issues
-sloppy --lenient            # 🎯 Same as --severity high
-sloppy --strict             # 🔬 Report everything
-sloppy --ci                 # 🚦 Exit 1 if any issues
-sloppy --max-score 50       # 📊 Exit 1 if score > 50
-sloppy --output report.json # 📋 Export JSON report
-sloppy --ignore "tests/*"   # 🚫 Exclude patterns
-sloppy --disable magic_number # ⏭️ Skip specific checks
-sloppy --version            # 📌 Show version
+sloppylint .                    # 🔍 Scan current directory
+sloppylint src/ tests/          # 📁 Scan multiple directories
+sloppylint --severity high      # ⚡ Only critical/high issues
+sloppylint --lenient            # 🎯 Same as --severity high
+sloppylint --strict             # 🔬 Report everything
+sloppylint --ci                 # 🚦 Exit 1 if any issues
+sloppylint --max-score 50       # 📊 Exit 1 if score > 50
+sloppylint --output report.json # 📋 Export JSON report
+sloppylint --ignore "tests/*"   # 🚫 Exclude patterns
+sloppylint --disable magic_number # ⏭️ Skip specific checks
+sloppylint --version            # 📌 Show version
 ```
 
 ---
