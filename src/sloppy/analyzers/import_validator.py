@@ -167,3 +167,82 @@ def is_likely_hallucinated_package(module_name: str) -> Optional[str]:
         return hallucinated_patterns[base]
     
     return f"Module '{module_name}' does not exist - possible hallucination"
+
+
+# Common hallucinated method calls
+# Format: method_name -> (correct_method, context_hint)
+HALLUCINATED_METHODS = {
+    # String methods
+    'titlecase': ('title', "str.title()"),
+    'uppercase': ('upper', "str.upper()"),
+    'lowercase': ('lower', "str.lower()"),
+    'trimStart': ('lstrip', "str.lstrip() - JavaScript pattern"),
+    'trimEnd': ('rstrip', "str.rstrip() - JavaScript pattern"),
+    'trim': ('strip', "str.strip() - JavaScript pattern"),
+    'charAt': ('[]', "Use indexing s[i] not s.charAt(i) - JavaScript pattern"),
+    'indexOf': ('find', "str.find() or 'in' operator - JavaScript pattern"),
+    'lastIndexOf': ('rfind', "str.rfind() - JavaScript pattern"),
+    'substring': ('[]', "Use slicing s[start:end] - JavaScript pattern"),
+    'substr': ('[]', "Use slicing s[start:start+length] - JavaScript pattern"),
+    'includes': ('in', "Use 'in' operator - JavaScript pattern"),
+    'repeat': ('*', "Use s * n for repetition - JavaScript pattern"),
+    'padStart': ('rjust', "str.rjust() or str.zfill() - JavaScript pattern"),
+    'padEnd': ('ljust', "str.ljust() - JavaScript pattern"),
+    'toUpperCase': ('upper', "str.upper() - JavaScript pattern"),
+    'toLowerCase': ('lower', "str.lower() - JavaScript pattern"),
+    'toString': ('str', "Use str() builtin - JavaScript pattern"),
+    
+    # List/Array methods
+    'push': ('append', "list.append() - JavaScript pattern"),
+    'unshift': ('insert', "list.insert(0, x) - JavaScript pattern"),
+    'shift': ('pop', "list.pop(0) - JavaScript pattern"),
+    'splice': ('[]', "Use slicing/del for splice - JavaScript pattern"),
+    'slice': ('[]', "Use slicing list[start:end] - JavaScript pattern"),
+    'concat': ('+', "Use + or extend() - JavaScript pattern"),
+    'forEach': ('for', "Use for loop - JavaScript pattern"),
+    'map': ('list comprehension', "Use [f(x) for x in list] or map()"),
+    'filter': ('list comprehension', "Use [x for x in list if cond] or filter()"),
+    'reduce': ('functools.reduce', "Use functools.reduce()"),
+    'find': ('next', "Use next(x for x in list if cond) or list comprehension"),
+    'findIndex': ('next', "Use next(i for i,x in enumerate(list) if cond)"),
+    'some': ('any', "Use any(cond for x in list)"),
+    'every': ('all', "Use all(cond for x in list)"),
+    'flat': ('itertools.chain', "Use itertools.chain.from_iterable()"),
+    'flatMap': ('itertools.chain', "Use chain.from_iterable(f(x) for x in list)"),
+    'length': ('len', "Use len(list) not list.length - JavaScript pattern"),
+    'size': ('len', "Use len(obj) not obj.size()"),
+    
+    # Dict methods
+    'hasOwnProperty': ('in', "Use 'key in dict' - JavaScript pattern"),
+    'keys': (None, None),  # Valid in Python
+    'values': (None, None),  # Valid in Python
+    'entries': ('items', "dict.items() - JavaScript pattern"),
+    'assign': ('update', "dict.update() or {**d1, **d2} - JavaScript pattern"),
+    'freeze': (None, "Python dicts are mutable; use types.MappingProxyType"),
+    
+    # Type checking
+    'typeof': ('type', "Use type() or isinstance() - JavaScript pattern"),
+    'instanceof': ('isinstance', "Use isinstance() - JavaScript pattern"),
+    
+    # Other common mistakes
+    'len': (None, None),  # Valid - but common mistake is .len() instead of len()
+    'print': (None, None),  # Valid
+    'sorted': (None, None),  # Valid
+    'reversed': (None, None),  # Valid
+}
+
+
+def check_hallucinated_method(method_name: str) -> Optional[str]:
+    """
+    Check if a method name is a known hallucination.
+    
+    Returns error message with correction if hallucinated, None otherwise.
+    """
+    if method_name not in HALLUCINATED_METHODS:
+        return None
+    
+    correct, hint = HALLUCINATED_METHODS[method_name]
+    if correct is None:
+        return None  # Method is valid
+    
+    return f"'{method_name}' is not a Python method. {hint}"

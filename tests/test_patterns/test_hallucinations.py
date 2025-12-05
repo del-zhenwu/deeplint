@@ -166,3 +166,66 @@ from json import parse
     hallucinated = [i for i in issues if i.pattern_id == "hallucinated_import"]
     assert len(hallucinated) == 1
     assert "json.loads" in hallucinated[0].message
+
+
+def test_hallucinated_method_push(tmp_python_file):
+    """Test that JavaScript .push() method is detected."""
+    code = '''
+items = []
+items.push(1)
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "append" in method_issues[0].message
+
+
+def test_hallucinated_method_foreach(tmp_python_file):
+    """Test that JavaScript .forEach() is detected."""
+    code = '''
+items = [1, 2, 3]
+items.forEach(lambda x: print(x))
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "for loop" in method_issues[0].message
+
+
+def test_hallucinated_attribute_length(tmp_python_file):
+    """Test that .length attribute is detected."""
+    code = '''
+items = [1, 2, 3]
+n = items.length
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    attr_issues = [i for i in issues if i.pattern_id == "hallucinated_attribute"]
+    assert len(attr_issues) == 1
+    assert "len(obj)" in attr_issues[0].message
+
+
+def test_valid_method_not_flagged(tmp_python_file):
+    """Test that valid Python methods are not flagged."""
+    code = '''
+items = []
+items.append(1)
+items.extend([2, 3])
+s = "hello"
+s.upper()
+s.strip()
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    hallucinated = [i for i in issues if i.pattern_id in ("hallucinated_method", "hallucinated_attribute")]
+    assert len(hallucinated) == 0

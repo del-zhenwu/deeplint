@@ -300,6 +300,98 @@ class WrongStdlibImport(ASTPattern):
         return issues
 
 
+class HallucinatedMethod(ASTPattern):
+    """Detect method calls that don't exist (JavaScript patterns, typos)."""
+    
+    id = "hallucinated_method"
+    severity = Severity.HIGH
+    axis = "quality"
+    message = "Hallucinated method call - method does not exist in Python"
+    node_types = (ast.Call,)
+    
+    def check_node(
+        self,
+        node: ast.AST,
+        file: Path,
+        source_lines: List[str],
+    ) -> List[Issue]:
+        if not isinstance(node, ast.Call):
+            return []
+        
+        # Check if it's a method call (obj.method())
+        if not isinstance(node.func, ast.Attribute):
+            return []
+        
+        method_name = node.func.attr
+        
+        from sloppy.analyzers.import_validator import check_hallucinated_method
+        
+        error_msg = check_hallucinated_method(method_name)
+        if error_msg:
+            # Try to get the source line for context
+            lineno = getattr(node, 'lineno', 0)
+            code = None
+            if 0 < lineno <= len(source_lines):
+                code = source_lines[lineno - 1].strip()
+            
+            return [self.create_issue_from_node(
+                node, file,
+                code=code or f".{method_name}()",
+                message=error_msg,
+            )]
+        
+        return []
+
+
+class HallucinatedAttribute(ASTPattern):
+    """Detect attribute access that doesn't exist (like .length on list)."""
+    
+    id = "hallucinated_attribute"
+    severity = Severity.HIGH
+    axis = "quality"
+    message = "Hallucinated attribute - attribute does not exist in Python"
+    node_types = (ast.Attribute,)
+    
+    # Attributes that are method calls in JS but not Python
+    JS_ATTRIBUTES = {
+        'length': "Use len(obj) not obj.length - JavaScript pattern",
+        'size': "Use len(obj) not obj.size - JavaScript pattern (unless pandas/set)",
+        'prototype': "Python doesn't have prototypes - JavaScript pattern",
+        '__proto__': "Python doesn't have __proto__ - JavaScript pattern",
+        'constructor': "Use type(obj) or obj.__class__ - JavaScript pattern",
+    }
+    
+    def check_node(
+        self,
+        node: ast.AST,
+        file: Path,
+        source_lines: List[str],
+    ) -> List[Issue]:
+        if not isinstance(node, ast.Attribute):
+            return []
+        
+        # Skip if this is a method call (handled by HallucinatedMethod)
+        # We detect that by checking if this Attribute is the func of a Call
+        # This is tricky at this level, so we check specific attributes
+        
+        attr_name = node.attr
+        
+        if attr_name in self.JS_ATTRIBUTES:
+            # Try to get the source line for context
+            lineno = getattr(node, 'lineno', 0)
+            code = None
+            if 0 < lineno <= len(source_lines):
+                code = source_lines[lineno - 1].strip()
+            
+            return [self.create_issue_from_node(
+                node, file,
+                code=code or f".{attr_name}",
+                message=self.JS_ATTRIBUTES[attr_name],
+            )]
+        
+        return []
+
+
 HALLUCINATION_PATTERNS = [
     TodoPlaceholder(),
     AssumptionComment(),
@@ -310,4 +402,6 @@ HALLUCINATION_PATTERNS = [
     MutableDefaultArg(),
     HallucinatedImport(),
     WrongStdlibImport(),
+    HallucinatedMethod(),
+    HallucinatedAttribute(),
 ]

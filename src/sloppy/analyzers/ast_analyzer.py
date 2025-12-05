@@ -70,6 +70,16 @@ class ASTAnalyzer(ast.NodeVisitor):
         self._check_patterns(node)
         self.generic_visit(node)
     
+    def visit_Call(self, node: ast.Call) -> None:
+        """Visit function/method calls."""
+        self._check_patterns(node)
+        self.generic_visit(node)
+    
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        """Visit attribute access."""
+        self._check_patterns(node)
+        self.generic_visit(node)
+    
     def visit_If(self, node: ast.If) -> None:
         """Visit if statements, tracking nesting depth."""
         self._visit_nested_block(node)
