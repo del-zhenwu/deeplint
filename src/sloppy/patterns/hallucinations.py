@@ -218,6 +218,88 @@ class MutableDefaultArg(ASTPattern):
         return "..."
 
 
+class HallucinatedImport(ASTPattern):
+    """Detect imports from wrong modules (common AI hallucinations)."""
+    
+    id = "hallucinated_import"
+    severity = Severity.CRITICAL
+    axis = "quality"
+    message = "Hallucinated import - name imported from wrong module"
+    node_types = (ast.ImportFrom,)
+    
+    def check_node(
+        self,
+        node: ast.AST,
+        file: Path,
+        source_lines: List[str],
+    ) -> List[Issue]:
+        if not isinstance(node, ast.ImportFrom):
+            return []
+        
+        if node.module is None:
+            return []
+        
+        from sloppy.analyzers.import_validator import check_known_hallucination
+        
+        issues = []
+        for alias in node.names:
+            name = alias.name
+            error_msg = check_known_hallucination(node.module, name)
+            if error_msg:
+                issues.append(self.create_issue_from_node(
+                    node, file,
+                    code=f"from {node.module} import {name}",
+                    message=error_msg,
+                ))
+        
+        return issues
+
+
+class WrongStdlibImport(ASTPattern):
+    """Detect imports from non-existent standard library modules."""
+    
+    id = "wrong_stdlib_import"
+    severity = Severity.CRITICAL
+    axis = "quality"
+    message = "Import from non-existent module"
+    node_types = (ast.Import, ast.ImportFrom)
+    
+    def check_node(
+        self,
+        node: ast.AST,
+        file: Path,
+        source_lines: List[str],
+    ) -> List[Issue]:
+        from sloppy.analyzers.import_validator import is_likely_hallucinated_package
+        
+        issues = []
+        
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                error_msg = is_likely_hallucinated_package(alias.name)
+                if error_msg:
+                    issues.append(self.create_issue_from_node(
+                        node, file,
+                        code=f"import {alias.name}",
+                        message=error_msg,
+                    ))
+        
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                error_msg = is_likely_hallucinated_package(node.module)
+                if error_msg:
+                    names = ", ".join(a.name for a in node.names[:3])
+                    if len(node.names) > 3:
+                        names += ", ..."
+                    issues.append(self.create_issue_from_node(
+                        node, file,
+                        code=f"from {node.module} import {names}",
+                        message=error_msg,
+                    ))
+        
+        return issues
+
+
 HALLUCINATION_PATTERNS = [
     TodoPlaceholder(),
     AssumptionComment(),
@@ -226,4 +308,6 @@ HALLUCINATION_PATTERNS = [
     EllipsisPlaceholder(),
     NotImplementedPlaceholder(),
     MutableDefaultArg(),
+    HallucinatedImport(),
+    WrongStdlibImport(),
 ]

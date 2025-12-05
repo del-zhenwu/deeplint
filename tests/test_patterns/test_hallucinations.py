@@ -109,3 +109,60 @@ def real_func(x):
     placeholder_ids = {"pass_placeholder", "ellipsis_placeholder", "notimplemented_placeholder"}
     placeholder_issues = [i for i in issues if i.pattern_id in placeholder_ids]
     assert len(placeholder_issues) == 0
+
+
+def test_hallucinated_import_wrong_module(tmp_python_file):
+    """Test that imports from wrong modules are detected."""
+    code = '''
+from requests import JSONResponse
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    hallucinated = [i for i in issues if i.pattern_id == "hallucinated_import"]
+    assert len(hallucinated) == 1
+    assert "starlette" in hallucinated[0].message or "fastapi" in hallucinated[0].message
+
+
+def test_hallucinated_import_dataclass_wrong_module(tmp_python_file):
+    """Test that dataclass imported from wrong module is detected."""
+    code = '''
+from collections import dataclass
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    hallucinated = [i for i in issues if i.pattern_id == "hallucinated_import"]
+    assert len(hallucinated) == 1
+    assert "dataclasses" in hallucinated[0].message
+
+
+def test_valid_import_not_flagged(tmp_python_file):
+    """Test that valid imports are not flagged."""
+    code = '''
+from dataclasses import dataclass
+from typing import Optional
+import json
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    hallucinated = [i for i in issues if i.pattern_id in ("hallucinated_import", "wrong_stdlib_import")]
+    assert len(hallucinated) == 0
+
+
+def test_javascript_pattern_detected(tmp_python_file):
+    """Test that JavaScript patterns (json.parse) are detected."""
+    code = '''
+from json import parse
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    hallucinated = [i for i in issues if i.pattern_id == "hallucinated_import"]
+    assert len(hallucinated) == 1
+    assert "json.loads" in hallucinated[0].message
