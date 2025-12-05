@@ -5,7 +5,7 @@
   <p><strong>Detect AI-generated code anti-patterns in your Python codebase.</strong></p>
 </div>
 
-[![Status: Alpha](https://img.shields.io/badge/Status-Alpha-orange?style=for-the-badge)](https://github.com/rsionnach/sloppy)
+[![PyPI](https://img.shields.io/pypi/v/sloppylint?style=for-the-badge)](https://pypi.org/project/sloppylint/)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -14,15 +14,8 @@
 ## ⚡ Quick Start
 
 ```bash
-# Install from GitHub
-pip install git+https://github.com/rsionnach/sloppy.git
+pip install sloppylint
 
-# Or clone and install locally
-git clone https://github.com/rsionnach/sloppy.git
-cd sloppy
-pip install -e .
-
-# Run it
 sloppy .
 
 # Output:
@@ -202,22 +195,19 @@ sloppy --version            # 📌 Show version
 ## 📦 Installation
 
 ```bash
-# Install from GitHub
-pip install git+https://github.com/rsionnach/sloppy.git
+# Install from PyPI
+pip install sloppylint
 
 # With colored output (recommended)
-pip install "sloppylint[rich] @ git+https://github.com/rsionnach/sloppy.git"
+pip install sloppylint[rich]
 
 # With all optional features
-pip install "sloppylint[all] @ git+https://github.com/rsionnach/sloppy.git"
+pip install sloppylint[all]
 
-# Or clone and install for development
+# Or install from source for development
 git clone https://github.com/rsionnach/sloppy.git
 cd sloppy
 pip install -e ".[dev]"
-
-# Verify
-sloppy --version
 ```
 
 ---
