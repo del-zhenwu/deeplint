@@ -16,7 +16,6 @@
 
 ```bash
 pip install sloppylint
-
 sloppylint .
 
 # Output:
