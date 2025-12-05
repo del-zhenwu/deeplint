@@ -1,83 +1,155 @@
-"""Configuration loading from pyproject.toml and .sloppyrc."""
+"""Configuration file support for Sloppy."""
 
 from __future__ import annotations
 
-import json
+import os
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import List, Optional, Dict, Any
 
 try:
-    import tomllib
+    import tomllib  # Python 3.11+
 except ImportError:
-    tomllib = None  # type: ignore
+    try:
+        import tomli as tomllib  # Fallback for Python < 3.11
+    except ImportError:
+        tomllib = None  # type: ignore
 
 
-def load_config(start_path: Optional[Path] = None) -> Dict[str, Any]:
-    """Load configuration from pyproject.toml or .sloppyrc files."""
+@dataclass
+class Config:
+    """Sloppy configuration."""
+    
+    # Patterns to ignore (glob patterns)
+    ignore: List[str] = field(default_factory=list)
+    
+    # Pattern IDs to disable
+    disable: List[str] = field(default_factory=list)
+    
+    # Minimum severity level
+    severity: str = "low"
+    
+    # Maximum allowed slop score
+    max_score: Optional[int] = None
+    
+    # Output format
+    format: str = "detailed"
+    
+    # CI mode
+    ci: bool = False
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Config":
+        """Create config from a dictionary."""
+        return cls(
+            ignore=data.get("ignore", []),
+            disable=data.get("disable", []),
+            severity=data.get("severity", "low"),
+            max_score=data.get("max-score"),
+            format=data.get("format", "detailed"),
+            ci=data.get("ci", False),
+        )
+    
+    def merge_cli_args(self, args: Any) -> None:
+        """Merge CLI arguments into config (CLI takes precedence)."""
+        # Append CLI ignores to config ignores
+        if hasattr(args, 'ignore') and args.ignore:
+            self.ignore.extend(args.ignore)
+        
+        # Append CLI disables to config disables
+        if hasattr(args, 'disable') and args.disable:
+            self.disable.extend(args.disable)
+        
+        # CLI severity overrides config (only if explicitly set)
+        if hasattr(args, 'severity') and args.severity != "low":
+            self.severity = args.severity
+        
+        # Handle strict/lenient flags
+        if hasattr(args, 'strict') and args.strict:
+            self.severity = "low"
+        elif hasattr(args, 'lenient') and args.lenient:
+            self.severity = "high"
+        
+        # CLI max_score overrides config
+        if hasattr(args, 'max_score') and args.max_score is not None:
+            self.max_score = args.max_score
+        
+        # CLI format overrides config
+        if hasattr(args, 'format') and args.format != "detailed":
+            self.format = args.format
+        
+        # CLI ci flag takes precedence
+        if hasattr(args, 'ci') and args.ci:
+            self.ci = True
+
+
+def find_config_file(start_path: Optional[Path] = None) -> Optional[Path]:
+    """Find pyproject.toml by searching up from start_path."""
     if start_path is None:
         start_path = Path.cwd()
     
-    config: Dict[str, Any] = {}
+    current = start_path.resolve()
     
-    # Try pyproject.toml first
-    pyproject = find_file_upward(start_path, "pyproject.toml")
-    if pyproject:
-        config = load_pyproject_config(pyproject)
-    
-    # Override with .sloppyrc if present
-    sloppyrc = find_file_upward(start_path, ".sloppyrc.json")
-    if sloppyrc:
-        config.update(load_json_config(sloppyrc))
-    
-    sloppyrc_toml = find_file_upward(start_path, ".sloppyrc.toml")
-    if sloppyrc_toml:
-        config.update(load_toml_config(sloppyrc_toml))
-    
-    return config
-
-
-def find_file_upward(start: Path, filename: str) -> Optional[Path]:
-    """Find a file by walking up the directory tree."""
-    current = start.resolve()
-    
-    while current != current.parent:
-        candidate = current / filename
-        if candidate.exists():
-            return candidate
-        current = current.parent
+    # Search up the directory tree
+    for parent in [current] + list(current.parents):
+        pyproject = parent / "pyproject.toml"
+        if pyproject.is_file():
+            return pyproject
     
     return None
 
 
-def load_pyproject_config(path: Path) -> Dict[str, Any]:
-    """Load [tool.sloppy] from pyproject.toml."""
+def load_config(config_path: Optional[Path] = None) -> Config:
+    """Load configuration from pyproject.toml.
+    
+    Args:
+        config_path: Path to pyproject.toml, or None to search for it.
+    
+    Returns:
+        Config object with loaded settings.
+    """
     if tomllib is None:
-        return {}
+        # No TOML support available
+        return Config()
+    
+    # Find config file if not specified
+    if config_path is None:
+        config_path = find_config_file()
+    
+    if config_path is None or not config_path.is_file():
+        return Config()
     
     try:
-        content = path.read_text(encoding="utf-8")
-        data = tomllib.loads(content)
-        return data.get("tool", {}).get("sloppy", {})
+        with open(config_path, "rb") as f:
+            data = tomllib.load(f)
     except Exception:
-        return {}
-
-
-def load_json_config(path: Path) -> Dict[str, Any]:
-    """Load configuration from a JSON file."""
-    try:
-        content = path.read_text(encoding="utf-8")
-        return json.loads(content)
-    except Exception:
-        return {}
-
-
-def load_toml_config(path: Path) -> Dict[str, Any]:
-    """Load configuration from a TOML file."""
-    if tomllib is None:
-        return {}
+        return Config()
     
-    try:
-        content = path.read_text(encoding="utf-8")
-        return tomllib.loads(content)
-    except Exception:
-        return {}
+    # Look for [tool.sloppy] section
+    tool_config = data.get("tool", {}).get("sloppy", {})
+    
+    if not tool_config:
+        return Config()
+    
+    return Config.from_dict(tool_config)
+
+
+def get_default_ignores() -> List[str]:
+    """Return default ignore patterns."""
+    return [
+        "__pycache__",
+        "*.pyc",
+        ".git",
+        ".venv",
+        "venv",
+        "node_modules",
+        ".tox",
+        ".nox",
+        ".eggs",
+        "*.egg-info",
+        "dist",
+        "build",
+        ".mypy_cache",
+        ".pytest_cache",
+        ".ruff_cache",
+    ]

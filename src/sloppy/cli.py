@@ -11,6 +11,7 @@ from sloppy import __version__
 from sloppy.detector import Detector
 from sloppy.reporter import TerminalReporter, JSONReporter
 from sloppy.scoring import calculate_score
+from sloppy.config import load_config, get_default_ignores
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -102,18 +103,27 @@ def main(args: Optional[List[str]] = None) -> int:
     parser = create_parser()
     opts = parser.parse_args(args)
     
+    # Load config from pyproject.toml
+    config = load_config()
+    
+    # Merge CLI args into config (CLI takes precedence)
+    config.merge_cli_args(opts)
+    
     # Determine severity threshold
     if opts.strict:
         min_severity = "low"
     elif opts.lenient:
         min_severity = "high"
     else:
-        min_severity = opts.severity
+        min_severity = config.severity
+    
+    # Build ignore patterns (defaults + config + cli)
+    ignore_patterns = get_default_ignores() + config.ignore
     
     # Create detector and scan
     detector = Detector(
-        ignore_patterns=opts.ignore,
-        disabled_patterns=opts.disable,
+        ignore_patterns=ignore_patterns,
+        disabled_patterns=config.disable,
         min_severity=min_severity,
     )
     
@@ -127,11 +137,11 @@ def main(args: Optional[List[str]] = None) -> int:
     score = calculate_score(issues)
     
     # Report results
-    if opts.format == "json" or opts.output:
+    if config.format == "json" or opts.output:
         reporter = JSONReporter()
     else:
         reporter = TerminalReporter(
-            format_style=opts.format,
+            format_style=config.format,
             min_severity=min_severity,
         )
     
@@ -144,9 +154,9 @@ def main(args: Optional[List[str]] = None) -> int:
     
     # Determine exit code
     exit_code = 0
-    if opts.ci and issues:
+    if config.ci and issues:
         exit_code = 1
-    if opts.max_score is not None and score.total > opts.max_score:
+    if config.max_score is not None and score.total > config.max_score:
         exit_code = 1
     
     return exit_code
