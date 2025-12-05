@@ -49,8 +49,8 @@ all = [
 sloppylint = "sloppy.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/rsionnach/sloppy"
-Repository = "https://github.com/rsionnach/sloppy"
+Homepage = "https://github.com/rsionnach/sloppylint"
+Repository = "https://github.com/rsionnach/sloppylint"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/sloppy"]

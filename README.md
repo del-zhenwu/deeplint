@@ -205,7 +205,7 @@ pip install sloppylint[rich]
 pip install sloppylint[all]
 
 # Or install from source for development
-git clone https://github.com/rsionnach/sloppy.git
+git clone https://github.com/rsionnach/sloppylint.git
 cd sloppy
 pip install -e ".[dev]"
 ```
@@ -231,7 +231,7 @@ format = "detailed"  # or "compact" or "json"
 ## 🤝 Contributing
 
 ```bash
-git clone https://github.com/rsionnach/sloppy.git
+git clone https://github.com/rsionnach/sloppylint.git
 cd sloppy
 pip install -e ".[dev]"
 pytest tests/ -v  # 57 tests should pass
