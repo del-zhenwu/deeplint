@@ -2,7 +2,7 @@
 
 <div align="center">
   <h1>🐷 Sloppylint</h1>
-  <p><strong>Detect AI-generated code anti-patterns in your Python codebase.</strong></p>
+  <p><strong>Detect AI-generated code anti-patterns in Python, Go, JavaScript, and TypeScript.</strong></p>
   <p><em>Catches AI-specific anti-patterns that traditional linters miss</em></p>
 </div>
 
@@ -72,11 +72,20 @@ Sloppylint targets these AI-specific patterns that escape Pylint, Flake8, and co
 ## 📥 What You Put In
 
 ```bash
-# Scan a directory
+# Scan a directory (auto-detects all supported languages)
 sloppylint src/
 
 # Scan specific files
-sloppylint app.py utils.py
+sloppylint app.py utils.py main.go app.js
+
+# Scan only Python files
+sloppylint --language python src/
+
+# Scan only Go files
+sloppylint --language go src/
+
+# Scan JavaScript and TypeScript files
+sloppylint --language javascript --language typescript src/
 
 # Only high severity issues
 sloppylint --severity high
@@ -176,18 +185,56 @@ x = calculate()  # should work hopefully
 ## 🛠️ CLI Commands
 
 ```bash
-sloppylint .                    # 🔍 Scan current directory
-sloppylint src/ tests/          # 📁 Scan multiple directories
-sloppylint --severity high      # ⚡ Only critical/high issues
-sloppylint --lenient            # 🎯 Same as --severity high
-sloppylint --strict             # 🔬 Report everything
-sloppylint --ci                 # 🚦 Exit 1 if any issues
-sloppylint --max-score 50       # 📊 Exit 1 if score > 50
-sloppylint --output report.json # 📋 Export JSON report
-sloppylint --ignore "tests/*"   # 🚫 Exclude patterns
-sloppylint --disable magic_number # ⏭️ Skip specific checks
-sloppylint --version            # 📌 Show version
+sloppylint .                         # 🔍 Scan current directory (all languages)
+sloppylint src/ tests/               # 📁 Scan multiple directories
+sloppylint --language python         # 🐍 Scan only Python files
+sloppylint --language go             # 🔷 Scan only Go files
+sloppylint --language javascript     # 🟨 Scan only JavaScript files
+sloppylint --language typescript     # 🔷 Scan only TypeScript files
+sloppylint --language python --language go  # 🎯 Scan multiple languages
+sloppylint --severity high           # ⚡ Only critical/high issues
+sloppylint --lenient                 # 🎯 Same as --severity high
+sloppylint --strict                  # 🔬 Report everything
+sloppylint --ci                      # 🚦 Exit 1 if any issues
+sloppylint --max-score 50            # 📊 Exit 1 if score > 50
+sloppylint --output report.json      # 📋 Export JSON report
+sloppylint --ignore "tests/*"        # 🚫 Exclude patterns
+sloppylint --disable magic_number    # ⏭️ Skip specific checks
+sloppylint --version                 # 📌 Show version
 ```
+
+---
+
+## 🌐 Supported Languages
+
+Sloppylint now supports multiple programming languages:
+
+| Language | File Extensions | Status |
+|----------|----------------|--------|
+| 🐍 **Python** | `.py` | ✅ Full support |
+| 🔷 **Go** | `.go` | ✅ Full support |
+| 🟨 **JavaScript** | `.js`, `.jsx` | ✅ Full support |
+| 🔷 **TypeScript** | `.ts`, `.tsx` | ✅ Full support |
+
+### Language-Specific Features
+
+**Python**: Full AST-based analysis + pattern detection
+- Hallucinated imports, mutable defaults, placeholder functions
+- Cross-language patterns (JS/Java/Go leaked into Python)
+- Structural anti-patterns (bare except, god classes, etc.)
+
+**Go**: Pattern-based detection
+- Debug print statements (`fmt.Println` with "debug", "test")
+- Overconfident/hedging comments
+- TODO/FIXME placeholders
+- Redundant comments
+
+**JavaScript/TypeScript**: Pattern-based detection
+- Debug console statements
+- `var` keyword (suggest `const`/`let`)
+- Overconfident/hedging comments
+- Commented-out code
+- TODO/FIXME placeholders
 
 ---
 
@@ -195,11 +242,13 @@ sloppylint --version            # 📌 Show version
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| 🌐 **Multi-Language Detection** | Catches patterns from JS, Java, Ruby, Go, C#, PHP | ✅ 100+ patterns |
-| 🔍 **Hallucinated Imports** | Detect non-existent packages | ✅ Done |
-| 📦 **Unused Imports** | AST-based detection | ✅ Done |
-| 💀 **Dead Code** | Unused functions/classes | ✅ Done |
-| 🔄 **Duplicate Detection** | Cross-file copy-paste | ✅ Done |
+| 🌐 **Multi-Language Support** | Python, Go, JavaScript, TypeScript | ✅ Done |
+| 🎯 **Language Filtering** | Target specific languages with `--language` | ✅ Done |
+| 🔍 **Auto-Detection** | Automatically detect file types by extension | ✅ Done |
+| 🔍 **Hallucinated Imports** | Detect non-existent packages (Python) | ✅ Done |
+| 📦 **Unused Imports** | AST-based detection (Python) | ✅ Done |
+| 💀 **Dead Code** | Unused functions/classes (Python) | ✅ Done |
+| 🔄 **Duplicate Detection** | Cross-file copy-paste (Python) | ✅ Done |
 | 🎨 **Rich Output** | Colors and tables (optional) | ✅ Done |
 | ⚙️ **Config Support** | pyproject.toml configuration | ✅ Done |
 
