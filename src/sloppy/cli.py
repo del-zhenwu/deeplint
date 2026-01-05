@@ -9,6 +9,7 @@ from pathlib import Path
 from sloppy import __version__
 from sloppy.config import get_default_ignores, load_config
 from sloppy.detector import Detector
+from sloppy.languages import Language, get_language_from_name
 from sloppy.reporter import JSONReporter, TerminalReporter
 from sloppy.scoring import calculate_score
 
@@ -17,7 +18,7 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
         prog="sloppylint",
-        description="Python AI Slop Detector - Find over-engineering, hallucinations, and dead code",
+        description="Multi-Language AI Slop Detector - Find over-engineering, hallucinations, and dead code",
     )
 
     parser.add_argument(
@@ -75,6 +76,15 @@ def create_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="PATTERN_ID",
         help="Disable specific pattern by ID (can be repeated)",
+    )
+
+    parser.add_argument(
+        "--language",
+        "-l",
+        action="append",
+        default=[],
+        metavar="LANG",
+        help="Target language(s) to scan: python, go, javascript, typescript (can be repeated). If not specified, auto-detects from file extensions.",
     )
 
     strictness = parser.add_mutually_exclusive_group()
@@ -144,12 +154,28 @@ def main(args: list[str] | None = None) -> int:
     # Build include patterns (config + cli)
     include_patterns = config.include
 
+    # Parse language filters from CLI
+    target_languages: set[Language] | None = None
+    if opts.language:
+        target_languages = set()
+        for lang_name in opts.language:
+            lang = get_language_from_name(lang_name)
+            if lang is None:
+                print(
+                    f"Error: Unknown language '{lang_name}'. "
+                    f"Supported: python, go, javascript (js), typescript (ts)",
+                    file=sys.stderr,
+                )
+                return 1
+            target_languages.add(lang)
+
     # Create detector and scan
     detector = Detector(
         ignore_patterns=ignore_patterns,
         include_patterns=include_patterns,
         disabled_patterns=config.disable,
         min_severity=min_severity,
+        target_languages=target_languages,
     )
 
     # Collect all paths
