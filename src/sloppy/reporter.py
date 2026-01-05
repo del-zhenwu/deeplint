@@ -170,7 +170,7 @@ class TerminalReporter(Reporter):
         if languages:
             lang_str = ", ".join(sorted(languages))
             print(f"Scanned languages: {lang_str}")
-            
+
         if not issues:
             print("No issues found. Clean code!")
             self._print_score_plain(score)

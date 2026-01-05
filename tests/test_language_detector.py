@@ -114,7 +114,6 @@ def test_detect_languages_mixed_paths(tmp_path: Path):
     detected = detect_languages([py_file, subdir])
     assert "python" in detected
     assert "javascript" in detected
-    assert "javascript" in detected
 
 
 def test_detect_languages_no_supported_files(tmp_path: Path):
