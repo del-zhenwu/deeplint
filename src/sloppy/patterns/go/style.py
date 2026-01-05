@@ -38,8 +38,9 @@ class GoPythonPatterns(RegexPattern):
     severity = Severity.HIGH
     axis = "style"
     message = "Python pattern in Go code - use Go idioms"
+    # Only detecting Python-specific method patterns that are invalid in Go
     pattern = re.compile(
-        r'(str\(|int\(|\.append\(|\.split\(|\.join\()',
+        r'(\.append\(|\.split\(|\.join\()',
         re.IGNORECASE,
     )
 
