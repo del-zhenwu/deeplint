@@ -269,11 +269,8 @@ class JSONReporter(Reporter):
                 "total": score.total,
             },
             "verdict": score.verdict,
+            **({"languages": sorted(languages)} if languages else {}),
         }
-        
-        # Add language info if provided
-        if languages:
-            summary["languages"] = sorted(languages)
         
         return {
             "summary": summary,

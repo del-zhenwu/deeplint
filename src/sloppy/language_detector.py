@@ -35,10 +35,15 @@ def detect_languages(paths: list[Path]) -> set[str]:
             if lang:
                 detected.add(lang)
         elif path.is_dir():
-            # Scan directory for all supported file types
-            for ext, lang in EXTENSION_TO_LANGUAGE.items():
-                if any(path.rglob(f"*{ext}")):
-                    detected.add(lang)
+            # Scan directory once and check all extensions
+            for file_path in path.rglob("*"):
+                if file_path.is_file():
+                    lang = get_language_from_extension(file_path.suffix)
+                    if lang:
+                        detected.add(lang)
+                        # Early exit if we've found all languages
+                        if len(detected) == len(LANGUAGE_EXTENSIONS):
+                            return detected
     
     return detected
 

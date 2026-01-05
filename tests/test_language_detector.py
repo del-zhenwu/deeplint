@@ -105,14 +105,15 @@ def test_detect_languages_mixed_paths(tmp_path: Path):
     """Test detecting languages from mixed file and directory paths."""
     subdir = tmp_path / "subdir"
     subdir.mkdir()
-    
+
     py_file = tmp_path / "test.py"
     py_file.write_text("print('hello')")
-    
+
     (subdir / "test.js").write_text("console.log('hello');")
 
     detected = detect_languages([py_file, subdir])
     assert "python" in detected
+    assert "javascript" in detected
     assert "javascript" in detected
 
 
@@ -129,7 +130,7 @@ def test_detect_languages_nested_directories(tmp_path: Path):
     """Test detecting languages in nested directories."""
     nested = tmp_path / "src" / "components"
     nested.mkdir(parents=True)
-    
+
     (nested / "App.tsx").write_text("const App = () => {};")
     (tmp_path / "main.py").write_text("print('hello')")
 

@@ -152,14 +152,6 @@ def main(args: list[str] | None = None) -> int:
     # Build include patterns (config + cli)
     include_patterns = config.include
 
-    # Create detector and scan
-    detector = Detector(
-        ignore_patterns=ignore_patterns,
-        include_patterns=include_patterns,
-        disabled_patterns=config.disable,
-        min_severity=min_severity,
-    )
-
     # Collect all paths
     paths = [Path(p) for p in opts.paths]
 
