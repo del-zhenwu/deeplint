@@ -38,8 +38,9 @@ class JSPythonPatterns(RegexPattern):
     severity = Severity.HIGH
     axis = "style"
     message = "Python pattern in JS/TS code - use JavaScript idioms"
+    # Only detecting patterns that are clearly Python-specific and invalid in JS
     pattern = re.compile(
-        r'(\.append\(|len\(|range\(|str\(|int\()',
+        r'(\.append\()',
         re.IGNORECASE,
     )
 
