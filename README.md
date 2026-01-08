@@ -393,11 +393,7 @@ pytest tests/ -v  # 99 tests should pass
 
 See [AGENTS.md](AGENTS.md) for coding conventions and pattern implementation guide.
 
-**New to the project?** Check out [Cursor Skills](.cursor/skills/README.md) for step-by-step guides on:
-- Creating new detection patterns
-- Writing tests
-- Adding language support
-- Reviewing contributions
+**Using with AI assistants?** Check out [Skills](.cursor/skills/README.md) for DeepLint tool descriptions and usage strategies.
 
 ---
 
