@@ -38,22 +38,22 @@ deeplint src/
 ### 3. Explore the Codebase
 
 ```
-deeplint/
-├── src/sloppy/           # Main package
-│   ├── cli.py            # Command-line interface
-│   ├── detector.py       # Main detection orchestration
-│   ├── patterns/         # Pattern definitions
-│   │   ├── __init__.py   # Pattern registry
-│   │   ├── base.py       # Base classes
-│   │   ├── noise.py      # Python noise patterns
-│   │   ├── hallucinations.py  # Python quality patterns
-│   │   ├── style.py      # Python style patterns
-│   │   ├── structure.py  # Python structural patterns
-│   │   ├── go/           # Go patterns
-│   │   └── js/           # JavaScript/TypeScript patterns
-│   └── analyzers/        # Language-specific analyzers
-├── tests/                # Test suite
-│   ├── test_patterns/    # Pattern tests
+deeplint/                     # Project root
+├── src/sloppy/               # Main package (module name: sloppy)
+│   ├── cli.py                # Command-line interface
+│   ├── detector.py           # Main detection orchestration
+│   ├── patterns/             # Pattern definitions
+│   │   ├── __init__.py       # Pattern registry
+│   │   ├── base.py           # Base classes
+│   │   ├── noise.py          # Python noise patterns
+│   │   ├── hallucinations.py # Python quality patterns
+│   │   ├── style.py          # Python style patterns
+│   │   ├── structure.py      # Python structural patterns
+│   │   ├── go/               # Go patterns
+│   │   └── js/               # JavaScript/TypeScript patterns
+│   └── analyzers/            # Language-specific analyzers
+├── tests/                    # Test suite
+│   ├── test_patterns/        # Pattern tests
 │   ├── fixtures/         # Test code samples
 │   └── conftest.py       # Test fixtures
 └── .cursor/skills/       # You are here!
@@ -168,11 +168,11 @@ Then create a PR on GitHub with:
 ### Run DeepLint Locally
 
 ```bash
-# As module
-python -m sloppy src/
-
-# As installed command
+# As installed command (recommended)
 deeplint src/
+
+# As module (alternative)
+python -m sloppy src/
 ```
 
 ### Add a New Pattern

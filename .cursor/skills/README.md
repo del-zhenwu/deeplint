@@ -4,6 +4,8 @@
 
 This directory contains Cursor Skills - reusable AI-assisted workflows tailored for the DeepLint project. These skills help developers work more efficiently by providing context-specific guidance for common tasks.
 
+> **Note on Naming**: The project is called **DeepLint** (pip package: `deeplint`), but the internal Python module is `sloppy` (located in `src/sloppy/`). This is why you'll see imports like `from sloppy.patterns...` in the code examples - they reflect the actual module structure.
+
 ## What are Cursor Skills?
 
 Cursor Skills are markdown documents that provide:
