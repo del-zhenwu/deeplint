@@ -382,18 +382,124 @@ format = "detailed"  # or "compact" or "json"
 
 ---
 
-## 🤝 Contributing
+## 🧪 Development & Testing
+
+### Quick Start for Contributors
 
 ```bash
+# Clone the repository
 git clone https://github.com/del-zhenwu/deeplint.git
 cd deeplint
+
+# Install in development mode with all dependencies
 pip install -e ".[dev]"
-pytest tests/ -v  # 99 tests should pass
+
+# Run all tests (114+ tests should pass)
+pytest tests/ -v
+
+# Run tests with coverage report
+pytest tests/ --cov=src/sloppy --cov-report=term-missing
+
+# Run tests for a specific language
+pytest tests/test_python_patterns.py -v
+pytest tests/test_go_patterns.py -v
+pytest tests/test_js_patterns.py -v
+pytest tests/test_karpeslop_patterns.py -v
 ```
 
-See [AGENTS.md](AGENTS.md) for coding conventions and pattern implementation guide.
+### Test Structure
 
-**Using with AI assistants?** Check out [Skills](.cursor/skills/README.md) for DeepLint tool descriptions and usage strategies.
+DeepLint has comprehensive test coverage for all supported languages:
+
+| Test File | Description | Coverage |
+|-----------|-------------|----------|
+| `test_python_patterns.py` | Python-specific patterns (noise, hallucinations, style, structure) | 15 tests |
+| `test_go_patterns.py` | Go language support and patterns | 7 tests |
+| `test_js_patterns.py` | JavaScript/TypeScript basic patterns | 11 tests |
+| `test_karpeslop_patterns.py` | Advanced JS/TS/React patterns | 22 tests |
+| `test_language_detector.py` | Multi-language detection | 12 tests |
+| `test_cli_multi_language.py` | CLI with language filtering | 12 tests |
+| `test_patterns/` | Core pattern detection (hallucinations, structure) | 20 tests |
+| `corpus/` | Integration tests with real-world code samples | 6 tests |
+
+### Running Linters and Type Checkers
+
+```bash
+# Format check with Ruff
+ruff check src/ tests/
+ruff format --check src/ tests/
+
+# Format check with Black and isort
+black --check src/ tests/
+isort --check-only src/ tests/
+
+# Type checking with mypy
+mypy src/sloppy
+
+# Security audit
+pip-audit
+```
+
+### CI/CD Workflows
+
+DeepLint uses GitHub Actions for continuous integration and deployment:
+
+#### Test Workflow (`.github/workflows/ci.yml`)
+
+Runs automatically on every push and pull request to `main`:
+
+- **Test Matrix**: Python 3.9, 3.10, 3.11, 3.12
+- **Linting**: Ruff, Black, isort format checks
+- **Type Checking**: mypy strict mode
+- **Security**: pip-audit dependency scanning
+- **Self-Check**: Runs DeepLint on itself
+- **Coverage**: Uploads to Codecov (82%+ coverage)
+
+#### Publish Workflow (`.github/workflows/publish.yml`)
+
+Deploys to PyPI automatically on GitHub releases:
+
+- **Build**: Creates source distribution and wheel
+- **Publish**: Uses trusted publishing (OIDC) to PyPI
+- **Trigger**: GitHub release creation or manual workflow dispatch
+
+### Adding New Tests
+
+When adding new patterns or features, follow these guidelines:
+
+1. **Create focused test files** for each language (see `test_python_patterns.py`)
+2. **Test both positive and negative cases** (detection and non-detection)
+3. **Use descriptive test names** that explain what's being tested
+4. **Add fixtures** in `tests/fixtures/` for complex test cases
+5. **Update test counts** in README when adding new tests
+
+### Test Fixtures
+
+```
+tests/
+├── fixtures/
+│   ├── go/           # Go test files with known issues
+│   ├── js/           # JavaScript/TypeScript test files
+│   └── .gitkeep
+└── corpus/
+    ├── true_positives/   # Code that should trigger warnings
+    └── false_positives/  # Valid code that shouldn't trigger warnings
+```
+
+### Development Resources
+
+- **Pattern Implementation Guide**: See [AGENTS.md](AGENTS.md) for coding conventions
+- **AI Assistant Integration**: Check [Skills](.cursor/skills/README.md) for tool descriptions
+- **Pattern Categories**: Noise (Axis 1), Quality/Hallucinations (Axis 2), Style (Axis 3), Structure
+
+### Making a Contribution
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/my-feature`
+3. Add tests for your changes
+4. Ensure all tests pass: `pytest tests/ -v`
+5. Run linters: `ruff check src/ tests/`
+6. Submit a pull request
 
 ---
 
