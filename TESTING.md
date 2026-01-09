@@ -115,7 +115,7 @@ Tests for advanced JavaScript/TypeScript/React patterns:
 pytest tests/ -v
 
 # Run with coverage
-pytest tests/ --cov=src/sloppy --cov-report=term-missing
+pytest tests/ --cov=src/deeplint --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_python_patterns.py -v

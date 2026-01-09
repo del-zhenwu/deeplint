@@ -400,7 +400,7 @@ pip install -e ".[dev]"
 pytest tests/ -v
 
 # Run tests with coverage report
-pytest tests/ --cov=src/sloppy --cov-report=term-missing
+pytest tests/ --cov=src/deeplint --cov-report=term-missing
 
 # Run tests for a specific language
 pytest tests/test_python_patterns.py -v
@@ -436,7 +436,7 @@ black --check src/ tests/
 isort --check-only src/ tests/
 
 # Type checking with mypy
-mypy src/sloppy
+mypy src/deeplint
 
 # Security audit
 pip-audit

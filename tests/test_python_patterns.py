@@ -7,7 +7,7 @@ This test suite ensures all major Python pattern categories are tested:
 - Structure patterns (god classes, dead code)
 """
 
-from sloppy.detector import Detector
+from deeplint.detector import Detector
 
 
 class TestPythonNoisePatterns:
