@@ -33,21 +33,6 @@ class JSHedgingComment(RegexPattern):
     )
 
 
-class JSPythonPatterns(RegexPattern):
-    """Detect Python patterns leaked into JS/TS code."""
-
-    id = "js_python_pattern"
-    severity = Severity.HIGH
-    axis = "style"
-    message = "Python pattern in JS/TS code - use JavaScript idioms"
-    supported_languages = ["javascript", "typescript"]
-    # Only detecting patterns that are clearly Python-specific and invalid in JS
-    pattern = re.compile(
-        r"(\.append\()",
-        re.IGNORECASE,
-    )
-
-
 class JSVarKeyword(RegexPattern):
     """Detect outdated var keyword in JS/TS."""
 
@@ -103,7 +88,6 @@ class JSMagicCSSValue(RegexPattern):
 JS_STYLE_PATTERNS = [
     JSOverconfidentComment(),
     JSHedgingComment(),
-    JSPythonPatterns(),
     JSVarKeyword(),
     JSUnnecessaryIIFE(),
     JSNestedTernaryAbuse(),

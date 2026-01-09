@@ -33,23 +33,7 @@ class GoHedgingComment(RegexPattern):
     )
 
 
-class GoPythonPatterns(RegexPattern):
-    """Detect Python patterns leaked into Go code."""
-
-    id = "go_python_pattern"
-    severity = Severity.HIGH
-    axis = "style"
-    message = "Python pattern in Go code - use Go idioms"
-    supported_languages = ["go"]
-    # Only detecting Python-specific method patterns that are invalid in Go
-    pattern = re.compile(
-        r"(\.append\(|\.split\(|\.join\()",
-        re.IGNORECASE,
-    )
-
-
 GO_STYLE_PATTERNS = [
     GoOverconfidentComment(),
     GoHedgingComment(),
-    GoPythonPatterns(),
 ]
